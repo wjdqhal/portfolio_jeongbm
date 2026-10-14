@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bomi's Town — 다정한 생각이 사는 동네</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Jua&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --orange: #e98763;
+            --peach: #f6a06f;
+            --cream: #ffe5a5;
+            --teal: #287e70;
+            --ink: #653f38;
+            --blue: #4694c5
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: auto
+        }
+
+        body {
+            margin: 0;
+            background: var(--orange);
+            font-family: 'DM Sans', 'Noto Sans KR', sans-serif;
+            color: #fff;
+            overflow-x: hidden
+        }
+
+        button,
+        a {
+            font: inherit
+        }
+
+        button {
+            cursor: pointer
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        #canvas-wrap {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(#789ab7 0%, #bba0a8 40%, #f29b72 74%, #e98763 100%)
+        }
+
+        #scene {
+            display: block;
+            width: 100%;
+            height: 100%
+        }
+
+        .grain {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: 4;
+            opacity: .11;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)" opacity=".19"/%3E%3C/svg%3E')
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 72px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 clamp(22px, 4.5vw, 74px);
+            color: #fff8e8;
+            text-shadow: 0 2px 10px rgba(79, 50, 40, .22)
+        }
+
+        nav .brand {
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -.6px
+        }
+
+        nav .links {
+            display: flex;
+            gap: 30px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px
+        }
+
+        nav .availability {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.3px
+        }
+
+        .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #76db84;
+            margin-right: 8px;
+            box-shadow: 0 0 10px #76db84
+        }
+
+        nav a:hover {
+            opacity: .6
+        }
+
+        #scroll-track {
+            height: 600vh;
+            position: relative;
+            z-index: 1;
+            pointer-events: none
+        }
+
+        .progress {
+            position: fixed;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 12;
+            display: flex;
+            flex-direction: column;
+            gap: 13px;
+            align-items: center
+        }
+
+        .progress button {
+            position: relative;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            border: 1px solid #fff9e4;
+            background: transparent;
+            padding: 0;
+            transition: all .3s
+        }
+
+        .progress button.active {
+            height: 26px;
+            border-radius: 8px;
+            background: #fff0b6
+        }
+
+        .progress button:hover {
+            background: #fff0b6
+        }
+
+        .progress .progress-label {
+            position: absolute;
+            right: 23px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            color: #fff0b6;
+            font-size: 10px;
+            letter-spacing: 1px
+        }
+
+        .progress button:hover .progress-label {
+            opacity: 1
+        }
+
+        .hero,
+        .project-ui,
+        .outro {
+            position: fixed;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity .22s
+        }
+
+        .hero {
+            text-align: center;
+            position: fixed
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(760px, 92vw);
+            height: min(420px, 52vh);
+            background: radial-gradient(circle at 50% 40%, rgba(255, 239, 202, .16), rgba(215, 123, 87, .10) 55%, rgba(215, 123, 87, 0) 75%);
+            border-radius: 46px;
+            z-index: -1
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2.4px;
+            color: #fffef3;
+            text-shadow: 0 2px 12px rgba(81, 50, 39, .28)
+        }
+
+        .hero h1 {
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            font-weight: 400;
+            line-height: .91;
+            letter-spacing: -.075em;
+            font-size: clamp(68px, 10.2vw, 170px);
+            color: #fff0b5;
+            margin: 22px 0 18px;
+            text-shadow: 0 4px 0 rgba(218, 111, 79, .16), 0 12px 24px rgba(73, 42, 34, .16)
+        }
+
+        .hero .sub {
+            letter-spacing: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            margin: 0 0 24px;
+            color: #fff9e9;
+            text-shadow: 0 2px 10px rgba(79, 50, 40, .22)
+        }
+
+        .pill {
+            border: 1px solid rgba(255, 246, 209, .92);
+            color: #fff9e7;
+            border-radius: 50px;
+            padding: 13px 21px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(165, 100, 73, .26);
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            transition: .2s;
+            text-shadow: none
+        }
+
+        .pill:hover {
+            background: #fff2c1;
+            color: #a75d48
+        }
+
+        .scroll-cue {
+            position: fixed;
+            bottom: 43px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 12;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #fff9ee;
+            text-shadow: 0 2px 10px rgba(79, 50, 40, .24)
+        }
+
+        .mouse {
+            width: 19px;
+            height: 29px;
+            border-radius: 12px;
+            border: 1px solid currentColor;
+            display: flex;
+            justify-content: center;
+            padding: 6px
+        }
+
+        .mouse:before {
+            content: '';
+            width: 2px;
+            height: 7px;
+            border-radius: 3px;
+            background: currentColor;
+            animation: scroll 1.8s infinite
+        }
+
+        @keyframes scroll {
+            to {
+                transform: translateY(7px);
+                opacity: 0
+            }
+        }
+
+        .project-ui {
+            align-items: flex-start;
+            padding-left: clamp(28px, 8vw, 150px);
+            position: fixed
+        }
+
+        .project-ui::before {
+            content: '';
+            position: absolute;
+            left: clamp(18px, 7vw, 124px);
+            top: 50%;
+            transform: translateY(-50%);
+            width: min(720px, 68vw);
+            min-height: 450px;
+            background: linear-gradient(180deg, rgba(84, 57, 48, .34), rgba(84, 57, 48, .18));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 242, 214, .18);
+            border-radius: 30px;
+            box-shadow: 0 18px 36px rgba(54, 34, 28, .14);
+            z-index: -1
+        }
+
+        .project-ui .num {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #fff2c2;
+            text-shadow: 0 2px 10px rgba(61, 38, 31, .28)
+        }
+
+        .project-ui h2 {
+            max-width: min(650px, 60vw);
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            font-size: clamp(65px, 9vw, 132px);
+            font-weight: 400;
+            line-height: 1;
+            margin: 14px 0 8px;
+            color: #fff0b7;
+            letter-spacing: -.04em;
+            text-shadow: 0 4px 14px rgba(61, 38, 31, .32)
+        }
+
+        .project-ui .kind {
+            font-size: 11px;
+            letter-spacing: 3px;
+            font-weight: 800;
+            color: #fff1d0;
+            text-shadow: 0 2px 10px rgba(79, 50, 40, .2)
+        }
+
+        .project-ui .desc {
+            color: #fff8ef;
+            font-size: clamp(13px, 1.12vw, 16px);
+            line-height: 1.9;
+            margin: 24px 0;
+            max-width: 430px;
+            word-break: keep-all;
+            text-shadow: 0 2px 10px rgba(79, 50, 40, .18)
+        }
+
+        .project-ui .view {
+            pointer-events: auto;
+            border: 1px solid #fff0cf;
+            color: #fffaf0;
+            background: rgba(92, 59, 48, .42);
+            border-radius: 30px;
+            padding: 15px 22px;
+            font-size: 12px;
+            font-weight: 800;
+            transition: .2s;
+            box-shadow: 0 8px 18px rgba(61, 38, 31, .12)
+        }
+
+        .project-ui .view:hover {
+            background: #fff3cb;
+            color: #986044
+        }
+
+        .project-ui .index {
+            margin-top: 50px;
+            color: #fff0ca;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(61, 38, 31, .28)
+        }
+
+        .project-ui .index b {
+            font-size: 23px;
+            margin-right: 8px
+        }
+
+        .outro {
+            text-align: left;
+            align-items: flex-start;
+            padding-left: clamp(28px, 8vw, 150px)
+        }
+
+        .outro h2 {
+            font-family: 'Jua', sans-serif;
+            font-size: clamp(56px, 8vw, 125px);
+            line-height: .96;
+            font-weight: 400;
+            letter-spacing: -.06em;
+            color: #f29b72;
+            margin: 20px 0 23px
+        }
+
+        .outro h2 span {
+            color: #4699cd
+        }
+
+        .outro .contact {
+            pointer-events: auto;
+            border: 2px solid #845d49;
+            color: #684839;
+            background: #ffcc8f;
+            padding: 15px 23px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 800
+        }
+
+        .outro .contact:hover {
+            background: #fff0c7
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 11;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 36px;
+            padding: 0 clamp(22px, 4.5vw, 74px);
+            font-size: 9px;
+            letter-spacing: 1.3px;
+            font-weight: 800;
+            color: #765346;
+            border-top: 1px solid rgba(111, 66, 52, .26);
+            background: linear-gradient(0deg, rgba(247, 210, 179, .18), rgba(247, 210, 179, 0))
+        }
+
+        footer .social {
+            display: flex;
+            gap: 20px
+        }
+
+        footer a:hover {
+            text-decoration: underline
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 30;
+            background: rgba(30, 35, 43, .68);
+            backdrop-filter: blur(15px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 28px
+        }
+
+        .modal.open {
+            display: flex
+        }
+
+        .modal-content {
+            position: relative;
+            width: min(980px, 100%);
+            max-height: calc(100vh - 56px);
+            overflow: auto;
+            border-radius: 18px;
+            background: #fff9f0;
+            color: #38332f;
+            box-shadow: 0 20px 75px #372c2b55
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 18px;
+            border: 0;
+            background: #fff9f0;
+            color: #292522;
+            border-radius: 50%;
+            width: 39px;
+            height: 39px;
+            font-size: 24px;
+            z-index: 1
+        }
+
+        .modal-top {
+            padding: 55px clamp(24px, 6vw, 65px) 40px
+        }
+
+        .modal-kicker {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ad725e
+        }
+
+        .modal h3 {
+            font-family: 'Jua', sans-serif;
+            font-size: clamp(47px, 6vw, 84px);
+            font-weight: 400;
+            line-height: 1;
+            margin: 20px 0 14px
+        }
+
+        .modal p {
+            line-height: 1.9;
+            font-size: 15px;
+            max-width: 600px;
+            color: #615b56
+        }
+
+        .mock-browser {
+            margin: 0 clamp(24px, 6vw, 65px) 50px;
+            overflow: hidden;
+            border-radius: 13px;
+            border: 1px solid #d9d3c9;
+            box-shadow: 0 15px 30px #4935261a
+        }
+
+        .browser-top {
+            height: 34px;
+            background: #efede9;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 6px
+        }
+
+        .browser-top i {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #d9bca8
+        }
+
+        .browser-top i:nth-child(2) {
+            background: #decf93
+        }
+
+        .browser-top i:nth-child(3) {
+            background: #b3c9b6
+        }
+
+        .browser-top small {
+            margin: auto;
+            color: #888;
+            font-size: 11px
+        }
+
+        .mock-screen {
+            height: 370px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 25px
+        }
+
+        .mock-screen strong {
+            font-size: clamp(36px, 5vw, 75px);
+            letter-spacing: -.04em
+        }
+
+        .mock-screen span {
+            font-size: 12px;
+            letter-spacing: 3px;
+            margin-bottom: 12px
+        }
+
+        .mock-screen p {
+            font-size: 13px;
+            max-width: 400px
+        }
+
+        .modal-bottom {
+            padding: 0 clamp(24px, 6vw, 65px) 45px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .modal-bottom span {
+            border: 1px solid #c5b3a0;
+            border-radius: 30px;
+            padding: 10px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #735e50
+        }
+
+        #error {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: #e98763;
+            color: #fff2d3;
+            padding: 20vh 10vw;
+            text-align: center
+        }
+
+        #error h2 {
+            font-size: 32px
+        }
+
+        #error p {
+            line-height: 1.8
+        }
+
+        @media(max-width:720px) {
+            nav {
+                height: 62px
+            }
+
+            .links {
+                gap: 12px !important;
+                font-size: 9px !important
+            }
+
+            .availability {
+                display: none
+            }
+
+            .hero h1 {
+                font-size: clamp(58px, 15vw, 90px)
+            }
+
+            .hero .eyebrow {
+                font-size: 9px
+            }
+
+            .project-ui {
+                justify-content: flex-end;
+                padding: 0 25px 16vh;
+                background: linear-gradient(0deg, rgba(95, 55, 44, .4), transparent 62%)
+            }
+
+            .project-ui::before {
+                left: 12px;
+                width: calc(100vw - 24px);
+                min-height: 360px;
+                top: auto;
+                bottom: 8vh;
+                transform: none
+            }
+
+            .project-ui h2 {
+                font-size: clamp(52px, 13vw, 80px)
+            }
+
+            .project-ui .desc {
+                margin: 13px 0;
+                font-size: 12px;
+                max-width: 260px
+            }
+
+            .project-ui .index {
+                margin-top: 18px
+            }
+
+            .progress {
+                right: 14px
+            }
+
+            .outro {
+                padding: 0 25px
+            }
+
+            .outro h2 {
+                font-size: clamp(45px, 12vw, 80px)
+            }
+
+            footer {
+                font-size: 8px
+            }
+
+            .scroll-cue {
+                bottom: 52px
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            .mouse:before {
+                animation: none
+            }
+
+            * {
+                scroll-behavior: auto !important
+            }
+        }
+
+        .work-panel {
+            position: fixed;
+            inset: 0;
+            z-index: 26;
+            background: #f8f4ed;
+            color: #231e1b;
+            overflow-y: auto;
+            display: none;
+            padding: 100px clamp(24px, 6vw, 100px) 70px
+        }
+
+        .work-panel.open {
+            display: block
+        }
+
+        .work-panel-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 25px;
+            align-items: start;
+            margin-bottom: 48px
+        }
+
+        .work-panel h2 {
+            font-size: clamp(45px, 7vw, 100px);
+            letter-spacing: -.075em;
+            line-height: 1;
+            margin: 10px 0
+        }
+
+        .work-panel .overline {
+            font-size: 10px;
+            letter-spacing: 2px;
+            font-weight: 800
+        }
+
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px
+        }
+
+        .work-card {
+            display: block;
+            color: #201b18
+        }
+
+        .work-thumb {
+            height: clamp(210px, 29vw, 430px);
+            overflow: hidden;
+            border-radius: 7px;
+            position: relative;
+            background: #ddd
+        }
+
+        .work-thumb img {
+            width: 100%;
+            height: auto;
+            display: block
+        }
+
+        .work-thumb.haevichi {
+            background: #c8e0e8
+        }
+
+        .work-thumb.apple {
+            background: #141418
+        }
+
+        .work-thumb.heyday {
+            background: #d9d9d9
+        }
+
+        .work-card h3 {
+            margin: 16px 0 5px;
+            font-size: 22px;
+            letter-spacing: -1px
+        }
+
+        .work-card p {
+            font-size: 12px;
+            color: #666
+        }
+
+        .work-card:hover .work-thumb img {
+            transform: scale(1.05)
+        }
+
+        .work-card .work-thumb img {
+            transition: transform .4s
+        }
+
+        .close-work {
+            background: #242020;
+            border: 0;
+            border-radius: 30px;
+            color: #fff;
+            padding: 12px 18px;
+            cursor: pointer
+        }
+
+        @media(max-width:680px) {
+            .work-grid {
+                grid-template-columns: 1fr
+            }
+
+            .work-thumb {
+                height: 230px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="canvas-wrap"><canvas id="scene"></canvas></div>
+    <div class="grain"></div>
+    <nav><a class="brand" href="#" id="homeLink">BOMI'S TOWN ✳</a>
+        <div class="links"><a href="about.html">ABOUT</a><a href="#" id="navOpenWorks">WORK</a><a href="#"
+                data-jump="4">CONTACT</a></div>
+        <div class="availability"><span class="dot"></span>OPEN TO WORK</div>
+    </nav>
+
+    <div class="work-panel" id="workPanel">
+        <div class="work-panel-header">
+            <div>
+                <div class="overline">BOMI'S TOWN / SELECTED WORKS</div>
+                <h2>All the stories<br>in my town.</h2>
+                <p>탐색하지 않고도 작업물을 빠르게 확인할 수 있어요.</p>
+            </div><button class="close-work" id="closeWork">✕ &nbsp;CLOSE</button>
+        </div>
+        <div class="work-grid"><a class="work-card" href="project.html?id=heyday">
+                <div class="work-thumb heyday"><img src="assets/heyday-wireframe.png" alt="바이헤이데이 케이스 스터디 레이아웃"></div>
+                <h3>01 — BYHEYDEY ↗</h3>
+                <p>브랜드 웹 디자인 · 가구 플랫폼</p>
+            </a><a class="work-card" href="project.html?id=haevichi">
+                <div class="work-thumb haevichi"><img src="assets/haevichi-home.png" alt="해비치 홈페이지 디자인"></div>
+                <h3>02 — HAEVICHI ↗</h3>
+                <p>웹 디자인 · 호텔 & 리조트</p>
+            </a><a class="work-card" href="project.html?id=apple">
+                <div class="work-thumb apple"><img src="assets/apple-tv-home.png" alt="Apple TV 메인 디자인"></div>
+                <h3>03 — APPLE TV ↗</h3>
+                <p>UI / UX · OTT & 스포츠</p>
+            </a></div>
+    </div>
+    <div class="progress" aria-label="프로젝트 위치"><button data-jump="0" aria-label="시작"><span
+                class="progress-label">HOME</span></button><button data-jump="1" aria-label="바이헤이데이"><span
+                class="progress-label">BYHEYDEY</span></button><button data-jump="2" aria-label="해비치"><span
+                class="progress-label">HAEVICHI</span></button><button data-jump="3" aria-label="Apple TV"><span
+                class="progress-label">APPLE TV</span></button><button data-jump="4" aria-label="연락처"><span
+                class="progress-label">CONTACT</span></button></div>
+    <div class="hero" id="hero">
+        <div class="eyebrow">작지만, 따뜻한 아이디어들이 모인 동네입니다.</div>
+        <h1>다정한 생각이<br>사는 동네</h1>
+        <p class="sub">A TOWN FULL OF WARM IDEAS</p><button class="pill" id="exploreBtn">우리 동네 구경하기 ↗</button>
+    </div>
+    <section class="project-ui" id="project-ui" style="opacity:0;visibility:hidden">
+        <div class="num" id="p-num">01 / PROJECT</div>
+        <h2 id="p-title">BYHEYDEY</h2>
+        <div class="kind" id="p-kind">FURNITURE BRAND · WEB DESIGN</div>
+        <p class="desc" id="p-desc"></p><button class="view" id="viewBtn">프로젝트 자세히 보기 ↗</button>
+        <div class="index" id="p-index"><b>01</b> / 03</div>
+    </section>
+    <section class="outro" id="outro" style="opacity:0;visibility:hidden">
+        <div class="eyebrow">THE DOOR IS ALWAYS OPEN</div>
+        <h2>재미있는 이야기가<br>있다면 <span>똑똑!</span></h2><button class="contact" id="emailBtn">wjdhal61@gmail.com ↗</button>
+    </section>
+    <div class="scroll-cue" id="scrollCue"><span class="mouse"></span>SCROLL TO EXPLORE</div>
+    <div id="scroll-track" aria-hidden="true"></div>
+    <footer><span>SEOUL, KOREA</span>
+        <div class="social"><a href="#" id="behanceLink">BEHANCE</a><a href="#" id="instagramLink">INSTAGRAM</a><a
+                href="#" id="linkedinLink">LINKEDIN</a></div><span>© 2026 BOMI</span>
+    </footer>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content"><button class="modal-close" id="closeModal" aria-label="닫기">×</button>
+            <div class="modal-top">
+                <div class="modal-kicker" id="modal-kicker"></div>
+                <h3 id="modal-title"></h3>
+                <p id="modal-desc"></p>
+            </div>
+            <div class="mock-browser">
+                <div class="browser-top"><i></i><i></i><i></i><small>portfolio / project preview</small></div>
+                <div class="mock-screen" id="mock-screen"><span id="mock-kicker"></span><strong
+                        id="mock-title"></strong>
+                    <p id="mock-desc"></p>
+                </div>
+            </div>
+            <div class="modal-bottom"><a id="caseStudyLink" href="project.html?id=heyday"
+                    style="background:#292520;color:white;padding:12px 20px;border-radius:40px;font-size:12px;font-weight:800">VIEW
+                    CASE STUDY ↗</a><span>OVERVIEW</span><span>UI / UX</span><span>WEB DESIGN</span></div>
+        </div>
+    </div>
+    <div id="error">
+        <h2>3D 마을을 불러올 수 없습니다.</h2>
+        <p>인터넷이 연결된 상태에서 브라우저로 열어 주세요. Three.js는 CDN으로 불러옵니다.</p>
+    </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+        const $ = s => document.querySelector(s), clamp = (n, a, b) => Math.max(a, Math.min(b, n)), lerp = (a, b, t) => a + (b - a) * t;
+        const SCENES = [{ name: 'HOME', pos: [0, 12, 32], target: [0, 3, 0], fov: 53 }, { name: 'BYHEYDEY', pos: [-9.1, 5.9, 7.2], target: [-9, 2, -2.2], fov: 48 }, { name: 'HAEVICHI', pos: [9, 6.3, -12], target: [8.6, 2.3, -22], fov: 48 }, { name: 'APPLE TV', pos: [-8.5, 6.0, -31], target: [-8, 2.5, -40], fov: 47 }, { name: 'CONTACT', pos: [5, 12, -48], target: [9, 2, -62], fov: 56 }];
+        const PROJECTS = [{ title: 'BYHEYDEY', kind: 'FURNITURE BRAND · WEB DESIGN', desc: '따뜻한 일상을 제안하는 가구 브랜드. 가구 쇼룸 속에서 브랜드의 디지털 경험을 만나보세요.', color: '#dbc8a8', text: '#4b564c', tag: 'ROOM FOR EVERY MOMENT', mock: '공간에 스며드는 편안한 가구와 일상의 이야기.' }, { title: 'HAEVICHI', kind: 'HOTEL & RESORT · WEB DESIGN', desc: '제주의 느긋한 공기와 리조트의 여유를 디지털 공간으로 담아낸 웹사이트 프로젝트.', color: '#b6d7d3', text: '#2b625f', tag: 'A MOMENT OF ESCAPE', mock: '제주의 풍경을 닮은 특별한 쉼과 경험.' }, { title: 'APPLE TV', kind: 'OTT PLATFORM · UI / UX', desc: '콘텐츠와 스포츠를 자연스럽게 오가는 몰입형 OTT 경험. 영상과 발견의 순간을 디자인했어요.', color: '#24243d', text: '#e5deff', tag: 'EVERY STORY, ONE PLACE', mock: 'Apple Originals · MLS · MLB' }];
+        const renderer = new THREE.WebGLRenderer({ canvas: $('#scene'), antialias: true, alpha: true, powerPreference: 'high-performance' }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8)); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.65;
+        const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0xe99473, .012); const camera = new THREE.PerspectiveCamera(53, innerWidth / innerHeight, .1, 200); scene.add(new THREE.HemisphereLight(0xffedcf, 0xb46d57, 2.5)); const sun = new THREE.DirectionalLight(0xffe5be, 3.25); sun.position.set(-13, 28, 15); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -60; sun.shadow.camera.right = 60; sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60; sun.shadow.normalBias = .04; scene.add(sun);
+        const mat = (c, rough = .88) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: 0 }); const M = { ground: mat('#e98b65'), road: mat('#f3b578'), edge: mat('#df795d'), cream: mat('#f6d08e'), yellow: mat('#ffc264'), orange: mat('#cb7656'), wood: mat('#bd7a58'), window: mat('#8ac0bb', .24), teal: mat('#287d6d'), green: mat('#429b6d'), green2: mat('#21765a'), pink: mat('#e86a9c'), white: mat('#fff3d1'), dark: mat('#2b2c45'), purple: mat('#56518c'), blue: mat('#67acb9'), stone: mat('#dfc3a2') };
+        function box(w, h, d, m, x, y, z, group = scene) { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; group.add(o); return o } function cyl(rt, rb, h, m, x, y, z, group = scene, segments = 16) { const o = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, segments), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; group.add(o); return o } function sph(r, m, x, y, z, group = scene) { const o = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 9), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; group.add(o); return o } function plane(w, h, m, x, y, z, group = scene) { return box(w, h, .13, m, x, y, z, group) }
+        box(170, .4, 180, M.ground, 0, -.3, -28); const curvePoints = []; for (let i = 0; i <= 90; i++) { let z = 18 - i * 1.05; let x = Math.sin((18 - z) * .105) * 3.5; curvePoints.push(new THREE.Vector3(x, .05, z)) } const roadCurve = new THREE.CatmullRomCurve3(curvePoints); const tangent = new THREE.Vector3(); for (let i = 0; i < curvePoints.length - 1; i++) { const a = curvePoints[i], b = curvePoints[i + 1]; const mid = a.clone().lerp(b, .5); tangent.subVectors(b, a).normalize(); const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize(); const len = a.distanceTo(b); const seg = new THREE.Mesh(new THREE.BoxGeometry(4.4, .08, len + .3), M.road); seg.position.copy(mid); seg.position.y = .04; seg.rotation.y = Math.atan2(tangent.x, tangent.z); seg.receiveShadow = true; scene.add(seg) } for (let i = 0; i < curvePoints.length - 1; i++) { const a = curvePoints[i], b = curvePoints[i + 1]; const mid = a.clone().lerp(b, .5); tangent.subVectors(b, a).normalize(); const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize(); const len = a.distanceTo(b); for (const side of [-1, 1]) { const edge = new THREE.Mesh(new THREE.BoxGeometry(.12, .09, len + .18), M.white); edge.position.copy(mid).add(normal.clone().multiplyScalar(side * 2.15)); edge.position.y = .085; edge.rotation.y = Math.atan2(tangent.x, tangent.z); edge.receiveShadow = true; scene.add(edge) } } const roadEnd = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.2, .08, 32), M.road); roadEnd.position.set(Math.sin((18 - (-75)) * 0.105) * 3.5, .04, -75); roadEnd.receiveShadow = true; scene.add(roadEnd); const roadEndBorder = new THREE.Mesh(new THREE.TorusGeometry(4.18, .08, 10, 42), M.white); roadEndBorder.rotation.x = Math.PI / 2; roadEndBorder.position.set(Math.sin((18 - (-75)) * 0.105) * 3.5, .095, -75); roadEndBorder.receiveShadow = true; scene.add(roadEndBorder);
+        // Low-poly trees, shrubs, and props with reduced density near the typography zone.
+        function tree(x, z, s = 1, color = M.green) { cyl(.13 * s, .17 * s, 1.35 * s, M.wood, x, .65 * s, z); sph(.85 * s, color, x, 1.72 * s, z); sph(.68 * s, color, x - .45 * s, 1.48 * s, z + .25 * s); sph(.55 * s, M.green2, x + .42 * s, 1.7 * s, z - .2 * s) }
+        // Spatially planned planting: reserve all building footprints and clear walking routes.
+        const buildingFootprints = [[-10, -5, 12, 9], [10, -24, 13, 11], [-9, -42, 13, 10], [0, 11.2, 18, 8], [17, 5, 8, 7], [18, -54, 8, 7], [-18, 8, 6, 6], [15, 5, 6, 6], [-17, -15, 6, 6], [18, -11, 6, 6], [-18, -30, 6, 6], [17, -37, 6, 6], [-16, -54, 6, 6], [15, -55, 6, 6]];
+        const propFootprints = [[19, -13.5, 5, 4], [19, -65, 5, 4], [19, -30, 4, 4], [13, -69, 4, 4], [19, -19, 3, 3]];
+        function insideBounds(x, z, a, pad = 0) { return a.some(([cx, cz, w, d]) => Math.abs(cx - x) < w / 2 + pad && Math.abs(cz - z) < d / 2 + pad) }
+        function freeSpot(x, z, pad = 1.6) { const center = Math.sin((18 - z) * .105) * 3.5; return Math.abs(x - center) > 5.5 + pad && !insideBounds(x, z, buildingFootprints, pad) && !insideBounds(x, z, propFootprints, pad) }
+        const treeSites = [[20, 12], [22, 0], [23, -7], [23, -20], [23, -30], [22, -46], [24, -56], [21, -69], [-25, 10], [-25, 0], [-24, -20], [-23, -36], [-25, -56], [-22, -70], [25, -67]];
+        treeSites.forEach(([x, z], i) => { if (freeSpot(x, z, 1.7)) tree(x, z, .8 + (i % 3) * .13, i % 3 ? M.green : M.green2) });
+        function awning(g, x, y, z, w = 2.4, d = 1.25, color = M.teal) { box(w, .18, d, color, x, y, z, g); box(w, .12, .24, M.green2, x, y - .06, z + d * .46, g); for (const sx of [-w * .4, w * .4]) box(.12, .75, .12, M.stone, x + sx, y - .4, z + d * .34, g) }
+        function door(g, x, y, z, w = 1.35, h = 2.35, color = M.orange) { box(w, h, .16, color, x, y, z, g); box(.12, h, .18, M.stone, x - w * .52, y, z + .01, g); box(.12, h, .18, M.stone, x + w * .52, y, z + .01, g); box(.12, .12, .18, M.white, x + w * .26, y - .2, z + .12, g) }
+        function openDoor(g, x, y, z, w = 1.7, h = 2.6, color = M.white) { box(w + 0.3, h + 0.24, .18, M.stone, x, y, z - .08, g); const fixed = new THREE.Mesh(new THREE.BoxGeometry(w * .5, h, .12), new THREE.MeshStandardMaterial({ color: 0xbed0c8, roughness: .82 })); fixed.position.set(x + w * .22, y, z + .02); fixed.castShadow = true; fixed.receiveShadow = true; g.add(fixed); const leaf = new THREE.Group(); leaf.position.set(x - w * .18, y, z + .02); g.add(leaf); const slab = new THREE.Mesh(new THREE.BoxGeometry(w * .48, h, .12), new THREE.MeshStandardMaterial({ color: 0xf5efe2, roughness: .82 })); slab.position.set(0, 0, 0); slab.castShadow = true; slab.receiveShadow = true; leaf.add(slab); leaf.rotation.y = -1.08; box(.08, .08, .08, M.white, x - w * .04, y - .08, z + .18, g) }
+        function planter(g, x, y, z, s = .75) { box(s, .34, s, M.stone, x, y, z, g); sph(s * .38, M.green, x, y + .44, z, g); sph(s * .26, M.green2, x - .18, y + .56, z + .12, g) }
+        function lamp(x, z, h = 3.3) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); cyl(.1, .12, h, M.stone, 0, h / 2, 0, g); box(.56, .15, .18, M.stone, 0, h + .02, 0, g); const glow = new THREE.Mesh(new THREE.SphereGeometry(.24, 12, 10), new THREE.MeshStandardMaterial({ color: 0xfff1c7, emissive: 0xffe0a0, emissiveIntensity: .5, roughness: .6 })); glow.position.set(0, h - .18, 0); g.add(glow) }
+        function bench(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); box(1.6, .14, .48, M.wood, 0, .75, 0, g); box(1.55, .12, .12, M.wood, 0, 1.18, -.17, g); for (const sx of [-.55, .55]) for (const sz of [-.15, .15]) box(.09, .74, .09, M.stone, sx, .34, sz, g) }
+        function picnicTable(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); box(1.9, .16, .7, M.wood, 0, .82, 0, g); box(1.7, .12, .32, M.wood, 0, .55, -.58, g); box(1.7, .12, .32, M.wood, 0, .55, .58, g); for (const sx of [-.62, .62]) { box(.1, .76, .1, M.stone, sx, .36, -.08, g); box(.1, .76, .1, M.stone, sx, .36, .08, g) } for (const sx of [-.48, .48]) for (const sz of [-.55, .55]) box(.08, .5, .08, M.stone, sx, .24, sz, g) }
+        function bike(x, z, s = .9) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); const wheelMat = new THREE.MeshStandardMaterial({ color: 0x7a5a4a, roughness: .6 }); const frameMat = new THREE.MeshStandardMaterial({ color: 0x3e8e72, roughness: .7 }); for (const wx of [-.62 * s, .62 * s]) { const w = new THREE.Mesh(new THREE.TorusGeometry(.32 * s, .035 * s, 10, 24), wheelMat); w.rotation.y = Math.PI / 2; w.position.set(wx, .35 * s, 0); w.castShadow = true; w.receiveShadow = true; g.add(w) }; const bar = (x1, y1, z1, x2, y2, z2, th = .05) => { const len = Math.hypot(x2 - x1, y2 - y1, z2 - z1); const m = new THREE.Mesh(new THREE.CylinderGeometry(th, th, len, 8), frameMat); m.position.set((x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(x2 - x1, y2 - y1, z2 - z1).normalize()); m.castShadow = true; g.add(m) }; bar(-.62 * s, .35 * s, 0, 0, .74 * s, 0); bar(0, .74 * s, 0, .62 * s, .35 * s, 0); bar(-.1 * s, .64 * s, 0, .22 * s, .64 * s, 0); bar(0, .74 * s, 0, -.05 * s, 1.0 * s, 0); bar(.48 * s, .58 * s, 0, .73 * s, .88 * s, 0); box(.32 * s, .05 * s, .12 * s, M.dark, .1 * s, .89 * s, 0, g); box(.26 * s, .05 * s, .08 * s, M.dark, .7 * s, .93 * s, 0, g) }
+        function busStop(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); box(3.3, .08, 2.35, M.stone, 0, .04, 0, g); for (const px of [-1.25, 1.25]) box(.12, 2.7, .12, M.stone, px, 1.35, .92, g); box(2.85, .12, 1.28, M.cream, 0, 2.72, .52, g); box(2.62, 1.34, .1, M.window, 0, 1.24, -.98, g); box(.1, 2.2, 1.96, M.window, -1.27, 1.15, 0, g); const sign = box(.54, .72, .08, M.orange, 1.48, 1.98, 1.06, g); sign.rotation.z = .04 }
+        function supermarket(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); box(5.6, 4.1, 4.8, M.cream, 0, 2.05, 0, g); box(6.2, .35, 5.2, M.teal, 0, 4.3, 0, g); box(6.2, .18, 5.2, M.green2, 0, 4.5, 0, g); box(3.4, 1.1, .2, M.orange, 0, 3.25, 2.46, g); box(2.8, .72, .18, M.white, 0, 3.26, 2.58, g); box(2.35, 2.35, .18, M.window, -1.4, 1.95, 2.48, g); box(1.05, 2.3, .18, M.window, 1.55, 1.96, 2.48, g); door(g, 1.55, 1.04, 2.6, .86, 2.08, M.orange); box(1.2, .16, 1.0, M.stone, 1.55, .13, 2.94, g); planter(g, -2.2, .18, 2.7, .6); planter(g, 2.35, .18, 2.72, .54); bike(x + 2.9, z + 3.8, .82) }
+        function building(label, x, z, type) {
+            const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+            if (type === 'heydey') {
+                box(10.3, 4.95, 6.4, M.cream, 0, 2.47, 0, g); box(10.9, .42, 6.9, M.teal, 0, 5.1, 0, g); box(10.9, .22, 6.9, M.green2, 0, 5.36, 0, g);
+                box(5.25, 3.15, .16, M.teal, -2.08, 2.28, 3.16, g); box(4.84, 2.72, .18, M.window, -2.08, 2.26, 3.27, g); box(.12, 2.72, .24, M.cream, -3.3, 2.26, 3.34, g); box(.12, 2.72, .24, M.cream, -.9, 2.26, 3.34, g);
+                door(g, 2.5, 1.38, 3.2, 1.45, 2.72, M.orange); awning(g, 2.5, 2.92, 3.74, 2.05, 1.0, M.orange); box(2.25, .18, 1.72, M.stone, 2.5, .18, 3.72, g);
+                box(7.1, .62, .28, M.orange, 0, 4.52, 3.18, g); box(2.05, .6, .26, M.white, -2.58, 4.55, 3.33, g); planter(g, -4.45, .18, 3.68, .78); planter(g, 4.78, .18, 3.7, .72); bike(x + 8.0, z + 6.8, .9); lamp(x + 5.6, z + 6.4);
+            } else if (type === 'haevichi') {
+                box(11.6, 5.1, 7.4, M.stone, 0, 2.55, 0, g); box(11.95, .42, 7.8, M.orange, 0, 5.28, 0, g); for (let a = -1; a <= 1; a++)for (let b = 0; b < 2; b++)box(2.15, 1.3, .15, M.window, a * 3.08, 2.12 + b * 1.72, 3.8, g);
+                door(g, 4.45, 1.55, 3.84, 1.42, 3.08, M.wood); box(3.0, .18, 1.95, M.stone, 4.45, .19, 4.1, g); box(12.2, .18, 4.3, M.blue, -.32, .14, 6.05, g); bench(x + 8.2, z + 9.4); lamp(x + 7.0, z + 6.5);
+            } else if (type === 'apple') {
+                box(10.8, 6.15, 6.8, M.dark, 0, 3.08, 0, g); box(11.0, .5, 7.0, M.purple, 0, 6.35, 0, g); box(8.9, 3.9, .22, M.purple, 0, 3.8, 3.5, g); box(8.3, 3.35, .24, new THREE.MeshBasicMaterial({ color: 0x30295c }), 0, 3.82, 3.64, g);
+                box(1.55, 2.45, .22, M.orange, -3.55, 1.25, 3.56, g); box(1.55, 2.45, .22, M.orange, 3.55, 1.25, 3.56, g); door(g, 0, 1.35, 3.54, 1.8, 2.62, M.blue); box(3.2, .22, 1.95, M.stone, 0, .16, 3.96, g); box(6.5, .28, .26, M.white, 0, 3.82, 3.81, g); box(.22, 2.8, .28, M.white, 0, 3.82, 3.81, g); box(9.3, .34, .5, M.blue, 0, 1.22, 3.68, g); lamp(x + 5.8, z + 5.1);
+            }
+        }
+        building('BYHEYDEY', -10, -5, 'heydey'); building('HAEVICHI', 10, -24, 'haevichi'); building('APPLE TV', -9, -42, 'apple');
+        supermarket(17, 5); busStop(19, -13.5); picnicTable(19, -30); bench(19, -19); lamp(14, -7.5); lamp(21, -27); supermarket(18, -54); busStop(19, -65); picnicTable(13, -69); lamp(22, -46);
+        // Decorative houses supporting the continuous town illusion.
+        function house(x, z, c = M.cream) { let g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); box(3.8, 3.1, 3.4, c, 0, 1.55, 0, g); const roof = box(4.3, .55, 3.8, M.teal, 0, 3.3, 0, g); roof.rotation.z = .05; for (let n of [-1.05, 1.05]) { box(.8, .95, .14, M.teal, n, 1.98, 1.8, g); box(.56, .72, .16, M.yellow, n, 1.98, 1.92, g) } door(g, 0, .74, 1.85, .82, 1.48, M.orange) }
+        [[-20, 1], [-20, -24], [22, -36], [-20, -60]].forEach(([x, z], i) => house(x, z, i % 2 ? M.cream : M.stone));
+        // Floating hand-crafted sign at the gate.
+        const gate = new THREE.Group(); gate.position.set(0, 0, 11.2); scene.add(gate); box(12.5, 6.6, .5, M.orange, 0, 4.0, 0, gate); box(15, .7, .7, M.cream, 0, 7.15, 0, gate); for (let x of [-7.4, 7.4]) box(.8, 7.4, .8, M.stone, x, 3.4, 0, gate); box(8, 1.6, .1, M.wood, 0, 4.35, .35, gate); box(2.2, 2.8, .08, M.window, -4.25, 1.8, .28, gate); box(2.2, 2.8, .08, M.window, 4.25, 1.8, .28, gate); openDoor(gate, 0, 1.38, .34, 2.05, 2.72, M.white); box(2.7, .1, 1.8, M.stone, 0, .05, 1.0, gate); box(1.8, .18, .8, M.stone, 0, .22, 1.95, gate);
+        const sunBall = new THREE.Mesh(new THREE.SphereGeometry(16, 40, 28), new THREE.MeshBasicMaterial({ color: 0xffb06a })); sunBall.position.set(0, 2.6, -88); scene.add(sunBall);
+        let scrollTarget = 0, scrollCurrent = 0, active = -1, modalOpen = false; const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+        function ease(t) { return t * t * (3 - 2 * t) } function cameraAt(t) { const section = clamp(t * 4, 0, 3.99999), i = Math.floor(section), f = ease(section - i); const a = SCENES[i], b = SCENES[i + 1]; let pos = a.pos.map((v, n) => lerp(v, b.pos[n], f)), target = a.target.map((v, n) => lerp(v, b.target[n], f)); camera.position.set(...pos); camera.lookAt(...target); camera.fov = lerp(a.fov, b.fov, f); camera.updateProjectionMatrix() }
+        function updateUI(t) { const stops = [0, .25, .5, .75, 1]; const nearest = stops.reduce((best, v, i) => Math.abs(t - v) < Math.abs(t - stops[best]) ? i : best, 0); if (nearest !== active) { active = nearest; document.querySelectorAll('.progress button').forEach((b, i) => b.classList.toggle('active', i === nearest)); if (nearest >= 1 && nearest <= 3) { const p = PROJECTS[nearest - 1]; $('#p-title').textContent = p.title; $('#p-kind').textContent = p.kind; $('#p-desc').textContent = p.desc; $('#p-num').textContent = `0${nearest} / SELECTED WORK`; $('#p-index').innerHTML = `<b>0${nearest}</b> / 03` } } const fade = (at, width) => clamp(1 - Math.abs(t - at) / width, 0, 1); const heroOpacity = clamp(1 - t / .135, 0, 1); const projectOpacity = Math.max(fade(.25, .12), fade(.5, .12), fade(.75, .12)); const outroOpacity = clamp((t - .87) / .09, 0, 1); for (let [sel, op] of [['#hero', heroOpacity], ['#project-ui', projectOpacity], ['#outro', outroOpacity]]) { const el = $(sel); el.style.opacity = op; el.style.visibility = op > .01 ? 'visible' : 'hidden'; el.style.pointerEvents = op > .5 ? 'auto' : 'none' } $('#scrollCue').style.opacity = clamp(1 - t / .09, 0, 1) }
+        function tick() { scrollTarget = clamp(scrollY / Math.max(1, maxScroll()), 0, 1); scrollCurrent = lerp(scrollCurrent, scrollTarget, .065); if (Math.abs(scrollTarget - scrollCurrent) < .00005) scrollCurrent = scrollTarget; cameraAt(scrollCurrent); updateUI(scrollCurrent); renderer.render(scene, camera); requestAnimationFrame(tick) }
+        function jump(i) { window.scrollTo({ top: maxScroll() * i / 4, behavior: 'smooth' }) } document.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); jump(+b.dataset.jump) })); $('#homeLink').onclick = e => { e.preventDefault(); jump(0) }; $('#exploreBtn').onclick = () => jump(1);
+        function openProject() { const i = clamp(active - 1, 0, 2), p = PROJECTS[i]; $('#modal-kicker').textContent = `PROJECT 0${i + 1} / 03  —  ${p.kind}`; $('#modal-title').textContent = p.title; $('#modal-desc').textContent = p.desc; $('#mock-kicker').textContent = p.tag; $('#mock-title').textContent = p.title; $('#mock-desc').textContent = p.mock; $('#caseStudyLink').href = 'project.html?id=' + ['heyday', 'haevichi', 'apple'][i]; $('#mock-screen').innerHTML = '<img src="assets/' + ['heyday-wireframe.png', 'haevichi-home.png', 'apple-tv-home.png'][i] + '" alt="실제 작업물 미리보기" style="width:100%;height:100%;object-fit:cover;object-position:top">'; $('#mock-screen').style.padding = '0'; $('#mock-screen').style.background = p.color; $('#mock-screen').style.color = p.text; $('#modal').classList.add('open'); modalOpen = true; document.body.style.overflow = 'hidden' } function closeProject() { $('#modal').classList.remove('open'); modalOpen = false; document.body.style.overflow = '' } $('#viewBtn').onclick = openProject; $('#closeModal').onclick = closeProject; $('#modal').onclick = e => { if (e.target === $('#modal')) closeProject() }; document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalOpen) closeProject() });
+        const openWorkPanel = () => { $('#workPanel').classList.add('open'); document.body.style.overflow = 'hidden' }; if (new URLSearchParams(location.search).get('view') === 'works') setTimeout(openWorkPanel, 400); const navOpen = document.getElementById('navOpenWorks'); if (navOpen) navOpen.onclick = (e) => { e.preventDefault(); openWorkPanel() }; $('#closeWork').onclick = () => { $('#workPanel').classList.remove('open'); document.body.style.overflow = '' }; $('#emailBtn').onclick = () => location.href = 'mailto:hello@bomidesign.kr';['behanceLink', 'instagramLink', 'linkedinLink'].forEach(id => $('#' + id).onclick = e => { e.preventDefault(); alert('실제 SNS 프로필 링크로 교체해 주세요. (index.html 하단)') });
+        window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight) }); cameraAt(0); tick();
+    </script>
+    <script>window.addEventListener('error', e => { if (e.message && /module|fetch|import|THREE/i.test(e.message)) document.getElementById('error').style.display = 'block' });</script>
+</body>
+
+</html>
